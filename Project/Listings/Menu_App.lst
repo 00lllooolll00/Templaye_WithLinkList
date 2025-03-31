@@ -1,0 +1,206 @@
+C51 COMPILER V9.60.7.0   MENU_APP                                                          03/31/2025 21:03:18 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MENU_APP
+OBJECT MODULE PLACED IN .\Objects\Menu_App.obj
+COMPILER INVOKED BY: D:\Keli5\C51\BIN\C51.EXE ..\User\Src\Menu_App.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\User\Inc;..\Driv
+                    -er\Inc;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\Menu_App.lst) OBJECT(.\Objects\Menu_App.obj)
+
+line level    source
+
+   1          #include "Menu_App.h"
+   2          #include "MyFilter.h"
+   3          
+   4          // 当前菜单指针，指向当前激活的菜单项
+   5          menu_node_t *current_menu = NULL;
+   6          
+   7          // 预定义所有菜单节点，使用静态分配以节省内存
+   8          xdata menu_node_t menu_temp; // 温度菜单节点
+   9          xdata menu_node_t menu_adc_1; // ADC菜单节点1
+  10          xdata menu_node_t menu_adc_2; // ADC菜单节点2
+  11          xdata menu_node_t menu_clock; // 时钟菜单节点
+  12          xdata menu_node_t menu_ultrasonic; // 超声波菜单节点
+  13          xdata menu_node_t menu_ne555; //NE555节点
+  14          
+  15          /**
+  16           * @brief 温度菜单显示更新函数
+  17           * 
+  18           * @details 显示当前温度值，包括整数部分和小数部分，并添加菜单标识
+  19           */
+  20          void temp_menu_update(void)
+  21          {
+  22   1          float temp_filtered = temperature; // 获取当前温度值，也可以在这里添加滤波处理
+  23   1      
+  24   1          // 显示温度菜单标识
+  25   1          Seg_Buf[0] = 1; // 温度菜单标识为"0"
+  26   1          Seg_Buf[1] = 10; // 空白分隔符
+  27   1      
+  28   1          // 显示温度值(例如: 25.6°C)
+  29   1          Seg_Buf[5] = (uint16_t)(temp_filtered * 10) / 100 % 10; // 温度十位数
+  30   1          Seg_Buf[6] = (uint16_t)(temp_filtered * 10) / 10 % 10; // 温度个位数
+  31   1          Seg_Buf[7] = (uint16_t)(temp_filtered * 10) / 1 % 10; // 温度小数点后一位
+  32   1          Seg_Point[6] = 1; // 在个位数后显示小数点
+  33   1          // 这里可以添加温度单位"C"的显示，需要自定义字符表支持
+  34   1      }
+  35          
+  36          /**
+  37           * @brief ADC菜单显示更新函数
+  38           * 
+  39           * @details 显示两路AD转换的值，分别是Adval1和Adval2
+  40           */
+  41          void adc_menu_update_1(void)
+  42          {
+  43   1          uint16_t Adval1_Show; //滤波后的展示值
+  44   1      
+  45   1          Adval1_Show = Filter_int(Adval1, 0.2f);
+  46   1      
+  47   1          // 显示菜单标识
+  48   1          Seg_Buf[0] = 2; // ADC菜单标识为"2"
+  49   1          Seg_Buf[1] = 10; // 空白分隔符
+  50   1      
+  51   1          Seg_Buf[3] = 1; //ADC1 标识
+  52   1      
+  53   1          // 显示ADC值1(通常为电位器)
+  54   1          Seg_Buf[5] = Adval1_Show / 100 % 10; // 百位
+C51 COMPILER V9.60.7.0   MENU_APP                                                          03/31/2025 21:03:18 PAGE 2   
+
+  55   1          Seg_Buf[6] = Adval1_Show / 10 % 10; // 十位
+  56   1          Seg_Buf[7] = Adval1_Show % 10; // 个位
+  57   1      }
+  58          
+  59          void adc_menu_update_2(void)
+  60          {
+  61   1          uint16_t Adval2_Show; //滤波后的展示值
+  62   1      
+  63   1          Adval2_Show = Filter_int(Adval2, 0.2f);
+  64   1      
+  65   1          Seg_Buf[0] = 2; // ADC菜单标识为"2"
+  66   1          Seg_Buf[1] = 10; // 空白分隔符
+  67   1      
+  68   1          Seg_Buf[3] = 2; //ADC2 标识
+  69   1      
+  70   1          // 显示ADC值2(通常为光敏电阻)
+  71   1          Seg_Buf[5] = Adval2_Show / 100 % 10; // 十位
+  72   1          Seg_Buf[6] = Adval2_Show / 10 % 10; // 十位
+  73   1          Seg_Buf[7] = Adval2_Show / 1 % 10; // 个位
+  74   1      }
+  75          
+  76          /**
+  77           * @brief 时钟菜单显示更新函数
+  78           * 
+  79           * @details 显示当前时间(小时:分钟:秒)，使用小数点模拟冒号
+  80           */
+  81          void clock_menu_update(void)
+  82          {
+  83   1          // 显示菜单标识
+  84   1          Seg_Buf[0] = 3; // 时钟菜单标识为"3"
+  85   1          Seg_Buf[1] = 10; // 空白分隔符
+  86   1      
+  87   1          // 显示时间 HH:MM:SS
+  88   1          Seg_Buf[2] = ucRTC[0] / 10; // 小时十位
+  89   1          Seg_Buf[3] = ucRTC[0] % 10; // 小时个位
+  90   1          Seg_Point[3] = 11; // 显示小时冒号(使用小数点模拟)
+  91   1      
+  92   1          Seg_Buf[4] = ucRTC[1] / 10; // 分钟十位
+  93   1          Seg_Buf[5] = ucRTC[1] % 10; // 分钟个位
+  94   1          Seg_Point[5] = 11; // 显示分钟冒号(使用小数点模拟)
+  95   1      
+  96   1          Seg_Buf[6] = ucRTC[2] / 10; // 秒十位
+  97   1          Seg_Buf[7] = ucRTC[2] % 10; // 秒个位
+  98   1      }
+  99          
+ 100          /**
+ 101           * @brief 超声波菜单显示更新函数
+ 102           * 
+ 103           * @details 显示超声波测距的相关信息
+ 104           */
+ 105          void ultrasonic_menu_update(void)
+ 106          {
+ 107   1          uint8_t distance_Show;
+ 108   1      
+ 109   1          distance_Show = (uint8_t)Filter_int(Distance, 0.2); //滤波
+ 110   1      
+ 111   1          // 显示菜单标识
+ 112   1          // 显示菜单标识
+ 113   1          Seg_Buf[0] = 4; // 时钟菜单标识为"3"
+ 114   1          Seg_Buf[1] = 10; // 空白分隔符
+ 115   1      
+ 116   1          Seg_Buf[2] = distance_Show / 100 % 10;
+C51 COMPILER V9.60.7.0   MENU_APP                                                          03/31/2025 21:03:18 PAGE 3   
+
+ 117   1          Seg_Buf[3] = distance_Show / 10 % 10;
+ 118   1          Seg_Buf[4] = distance_Show % 10;
+ 119   1          // 注意：显示字母需要在Seg_Table中定义对应的段码
+ 120   1      }
+ 121          
+ 122          /**
+ 123           * @brief NE555菜单显示更新函数
+ 124           * 
+ 125           * @details 显示NE555的相关信息
+ 126           */
+ 127          void ne555_menu_update(void)
+ 128          {
+ 129   1          //显示数据
+ 130   1          //为避免第一次测量时没数据，先初始化为0，先显示第一次再开始测量
+ 131   1          uint16_t Freq_Show;
+ 132   1          Freq_Show = Filter_int(Freq, 0.2);
+ 133   1      
+ 134   1          Seg_Buf[0] = 5; // 时钟菜单标识为"3"
+ 135   1          Seg_Buf[1] = 10; // 空白分隔符
+ 136   1      
+ 137   1          Seg_Buf[2] = Freq_Show / 10000 % 10;
+ 138   1          Seg_Buf[3] = Freq_Show / 1000 % 10;
+ 139   1          Seg_Buf[4] = Freq_Show / 100 % 10;
+ 140   1          Seg_Buf[5] = Freq_Show / 10 % 10;
+ 141   1          Seg_Buf[6] = Freq_Show / 1 % 10;
+ 142   1      }
+ 143          
+ 144          /**
+ 145           * @brief 菜单系统初始化
+ 146           * 
+ 147           * @details 初始化所有菜单节点，建立它们之间的链接关系，设置初始菜单
+ 148           *          此函数应在系统启动时调用一次
+ 149           * @note 对于链表来说 不同级别的本模板采用的是父子关系，但是对于同级操作，
+             -采用的是next prev的关系
+ 150           */
+ 151          void Menu_Init(void)
+ 152          {
+ 153   1          // 初始化温度菜单
+ 154   1          Menu_Add(&menu_temp, 0x20, temp_menu_update, &menu_ne555, &menu_adc_1, NULL, NULL);
+ 155   1      
+ 156   1          // 初始化ADC菜单
+ 157   1          Menu_Add(&menu_adc_1, 0x30, adc_menu_update_1, &menu_temp, &menu_clock, &menu_adc_2, NULL);
+ 158   1      
+ 159   1          Menu_Add(&menu_adc_2, 0x31, adc_menu_update_2, NULL, NULL, &menu_adc_1, &menu_adc_1);
+ 160   1      
+ 161   1          // 初始化时钟菜单
+ 162   1          Menu_Add(&menu_clock, 0x40, clock_menu_update, &menu_adc_1, &menu_ultrasonic, NULL, NULL);
+ 163   1      
+ 164   1          // 初始化超声波菜单
+ 165   1          Menu_Add(&menu_ultrasonic, 0x50, ultrasonic_menu_update, &menu_clock, &menu_ne555, NULL, NULL);
+ 166   1      
+ 167   1          // 初始化ne555菜单
+ 168   1          Menu_Add(&menu_ne555, 0x60, ne555_menu_update, &menu_ultrasonic, &menu_temp, NULL, NULL);
+ 169   1      
+ 170   1          // 设置初始菜单为主菜单
+ 171   1          current_menu = &menu_temp;
+ 172   1      
+ 173   1          // 立即更新显示，使菜单内容显示出来
+ 174   1          Menu_Update();
+ 175   1      }
+
+
+C51 COMPILER V9.60.7.0   MENU_APP                                                          03/31/2025 21:03:18 PAGE 4   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    934    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     96    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

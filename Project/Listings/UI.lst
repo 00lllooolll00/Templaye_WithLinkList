@@ -1,0 +1,338 @@
+C51 COMPILER V9.60.7.0   UI                                                                03/30/2025 14:53:13 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UI
+OBJECT MODULE PLACED IN .\Objects\UI.obj
+COMPILER INVOKED BY: D:\Keli5\C51\BIN\C51.EXE ..\User\Src\UI.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\User\Inc;..\Driver\Inc
+                    -;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\UI.lst) OBJECT(.\Objects\UI.obj)
+
+line level    source
+
+   1          #include "UI.h"
+   2          #include "Seg.h"
+   3          #include "MyFilter.h"
+   4          
+   5          // 引用外部定义的全局变量
+   6          extern float temperature; // 温度值，由温度传感器任务更新
+   7          extern uint8_t Adval1; // AD转换值1，通常为电位器值
+   8          extern uint8_t Adval2; // AD转换值2，通常为光敏电阻值
+   9          extern uint8_t pdata ucRTC[3]; // 时间存储数组，分别为时、分、秒
+  10          extern uint8_t pdata Seg_Buf[8]; // 数码管显示缓存，存储要显示的字符
+  11          extern uint8_t pdata Seg_Point[8]; // 数码管小数点缓存，控制小数点显示与否
+  12          extern uint8_t Distance; //距离
+  13          extern uint16_t Freq; //NE555频率
+  14          
+  15          // 当前菜单指针，指向当前激活的菜单项
+  16          menu_node_t *current_menu = NULL;
+  17          
+  18          // 预定义所有菜单节点，使用静态分配以节省内存
+  19          static menu_node_t xdata menu_main; // 主菜单节点
+  20          static menu_node_t xdata menu_temp; // 温度菜单节点
+  21          static menu_node_t xdata menu_adc; // ADC菜单节点
+  22          static menu_node_t xdata menu_clock; // 时钟菜单节点
+  23          static menu_node_t xdata menu_ultrasonic; // 超声波菜单节点
+  24          static menu_node_t xdata menu_ne555;
+  25          
+  26          /**
+  27           * @brief 主菜单显示更新函数
+  28           * 
+  29           * @details 更新数码管缓冲区，显示主菜单界面，用"-"符号和"0"标识主菜单
+  30           */
+  31          void main_menu_update(void)
+  32          {
+  33   1          // 清除所有显示
+  34   1          memset(Seg_Buf, 10, 8); // 10表示不显示任何内容(空白)
+  35   1          memset(Seg_Point, 0, 8); // 清除所有小数点
+  36   1      
+  37   1          // 显示"-----0"作为主菜单标识
+  38   1          Seg_Buf[2] = 11; // "-"符号
+  39   1          Seg_Buf[3] = 11; // "-"符号
+  40   1          Seg_Buf[4] = 11; // "-"符号
+  41   1          Seg_Buf[5] = 11; // "-"符号
+  42   1          Seg_Buf[6] = 11; // "-"符号
+  43   1          Seg_Buf[7] = 0; // "0"符号 - 表示当前在主菜单
+  44   1      }
+  45          
+  46          /**
+  47           * @brief 温度菜单显示更新函数
+  48           * 
+  49           * @details 显示当前温度值，包括整数部分和小数部分，并添加菜单标识
+  50           */
+  51          void temp_menu_update(void)
+  52          {
+  53   1          float temp_filtered = temperature; // 获取当前温度值，也可以在这里添加滤波处理
+  54   1      
+C51 COMPILER V9.60.7.0   UI                                                                03/30/2025 14:53:13 PAGE 2   
+
+  55   1          memset(Seg_Buf, 10, 8); // 清空显示缓冲区
+  56   1          memset(Seg_Point, 0, 8); // 清除所有小数点
+  57   1      
+  58   1          // 显示温度菜单标识
+  59   1          Seg_Buf[0] = 1; // 温度菜单标识为"0"
+  60   1          Seg_Buf[1] = 10; // 空白分隔符
+  61   1      
+  62   1          // 显示温度值(例如: 25.6°C)
+  63   1          Seg_Buf[2] = (uint16_t)(temp_filtered * 10) / 100 % 10; // 温度十位数
+  64   1          Seg_Buf[3] = (uint16_t)(temp_filtered * 10) / 10 % 10; // 温度个位数
+  65   1          Seg_Buf[4] = (uint16_t)(temp_filtered * 10) / 1 % 10; // 温度小数点后一位
+  66   1          Seg_Point[3] = 1; // 在个位数后显示小数点
+  67   1          // 这里可以添加温度单位"C"的显示，需要自定义字符表支持
+  68   1      }
+  69          
+  70          /**
+  71           * @brief ADC菜单显示更新函数
+  72           * 
+  73           * @details 显示两路AD转换的值，分别是Adval1和Adval2
+  74           */
+  75          void adc_menu_update(void)
+  76          {
+  77   1          uint16_t Adval1_Show; //滤波后的展示值
+  78   1          uint16_t Adval2_Show; //滤波后的展示值
+  79   1      
+  80   1          memset(Seg_Buf, 10, 8); // 清空显示缓冲区
+  81   1          memset(Seg_Point, 0, 8); // 清除所有小数点
+  82   1      
+  83   1          Adval1_Show = Filter_int(Adval1, 0.2f);
+  84   1          Adval2_Show = Filter_int(Adval2, 0.2f);
+  85   1      
+  86   1          // 显示菜单标识
+  87   1          Seg_Buf[0] = 2; // ADC菜单标识为"2"
+  88   1          Seg_Buf[1] = 10; // 空白分隔符
+  89   1      
+  90   1          // 显示ADC值1(通常为电位器)
+  91   1          Seg_Buf[2] = Adval1_Show / 100 % 10; // 百位
+  92   1          Seg_Buf[3] = Adval1_Show / 10 % 10; // 十位
+  93   1          Seg_Buf[4] = Adval1_Show % 10; // 个位
+  94   1      
+  95   1          Seg_Point[4] = 1; // 小数点，分隔两个通道值
+  96   1      
+  97   1          // 显示ADC值2(通常为光敏电阻)
+  98   1          Seg_Buf[5] = Adval2_Show / 100 % 10; // 十位
+  99   1          Seg_Buf[6] = Adval2_Show / 10 % 10; // 十位
+ 100   1          Seg_Buf[7] = Adval2_Show / 1 % 10; // 个位
+ 101   1      }
+ 102          
+ 103          /**
+ 104           * @brief 时钟菜单显示更新函数
+ 105           * 
+ 106           * @details 显示当前时间(小时:分钟:秒)，使用小数点模拟冒号
+ 107           */
+ 108          void clock_menu_update(void)
+ 109          {
+ 110   1          memset(Seg_Buf, 10, 8); // 清空显示缓冲区
+ 111   1          memset(Seg_Point, 0, 8); // 清除所有小数点
+ 112   1      
+ 113   1          // 显示菜单标识
+ 114   1          Seg_Buf[0] = 3; // 时钟菜单标识为"3"
+ 115   1          Seg_Buf[1] = 10; // 空白分隔符
+ 116   1      
+C51 COMPILER V9.60.7.0   UI                                                                03/30/2025 14:53:13 PAGE 3   
+
+ 117   1          // 显示时间 HH:MM:SS
+ 118   1          Seg_Buf[2] = ucRTC[0] / 10; // 小时十位
+ 119   1          Seg_Buf[3] = ucRTC[0] % 10; // 小时个位
+ 120   1          Seg_Point[3] = 11; // 显示小时冒号(使用小数点模拟)
+ 121   1      
+ 122   1          Seg_Buf[4] = ucRTC[1] / 10; // 分钟十位
+ 123   1          Seg_Buf[5] = ucRTC[1] % 10; // 分钟个位
+ 124   1          Seg_Point[5] = 11; // 显示分钟冒号(使用小数点模拟)
+ 125   1      
+ 126   1          Seg_Buf[6] = ucRTC[2] / 10; // 秒十位
+ 127   1          Seg_Buf[7] = ucRTC[2] % 10; // 秒个位
+ 128   1      }
+ 129          
+ 130          /**
+ 131           * @brief 超声波菜单显示更新函数
+ 132           * 
+ 133           * @details 显示超声波测距的相关信息
+ 134           */
+ 135          void ultrasonic_menu_update(void)
+ 136          {
+ 137   1          uint8_t distance_Show;
+ 138   1      
+ 139   1          memset(Seg_Buf, 10, 8); // 清空显示缓冲区
+ 140   1          memset(Seg_Point, 0, 8); // 清除所有小数点
+ 141   1      
+ 142   1          distance_Show = (uint8_t)Filter_int(Distance, 0.2); //滤波
+ 143   1      
+ 144   1          // 显示菜单标识
+ 145   1          // 显示菜单标识
+ 146   1          Seg_Buf[0] = 4; // 时钟菜单标识为"3"
+ 147   1          Seg_Buf[1] = 10; // 空白分隔符
+ 148   1      
+ 149   1          Seg_Buf[2] = distance_Show / 100 % 10;
+ 150   1          Seg_Buf[3] = distance_Show / 10 % 10;
+ 151   1          Seg_Buf[4] = distance_Show % 10;
+ 152   1          // 注意：显示字母需要在Seg_Table中定义对应的段码
+ 153   1      }
+ 154          
+ 155          /**
+ 156           * @brief NE555菜单显示更新函数
+ 157           * 
+ 158           * @details 显示NE555的相关信息
+ 159           */
+ 160          void ne555_menu_update(void)
+ 161          {
+ 162   1          //显示数据
+ 163   1          //为避免第一次测量时没数据，先初始化为0，先显示第一次再开始测量
+ 164   1          uint16_t Freq_Show;
+ 165   1          Freq_Show = Filter_int(Freq, 0.2);
+ 166   1      
+ 167   1          Seg_Buf[0] = 5; // 时钟菜单标识为"3"
+ 168   1          Seg_Buf[1] = 10; // 空白分隔符
+ 169   1      
+ 170   1          Seg_Buf[2] = Freq_Show / 10000 % 10;
+ 171   1          Seg_Buf[3] = Freq_Show / 1000 % 10;
+ 172   1          Seg_Buf[4] = Freq_Show / 100 % 10;
+ 173   1          Seg_Buf[5] = Freq_Show / 10 % 10;
+ 174   1          Seg_Buf[6] = Freq_Show / 1 % 10;
+ 175   1      }
+ 176          
+ 177          /**
+ 178           * @brief 切换到下一个同级菜单
+C51 COMPILER V9.60.7.0   UI                                                                03/30/2025 14:53:13 PAGE 4   
+
+ 179           * 
+ 180           * @details 将当前菜单指针移动到下一个同级菜单，并更新显示
+ 181           */
+ 182          void Menu_MoveNext(void)
+ 183          {
+ 184   1          if (current_menu && current_menu->menu_next)
+ 185   1          {
+ 186   2              current_menu = current_menu->menu_next; // 切换到下一个菜单
+ 187   2              Menu_Update(); // 立即更新显示
+ 188   2          }
+ 189   1      }
+ 190          
+ 191          /**
+ 192           * @brief 切换到上一个同级菜单
+ 193           * 
+ 194           * @details 将当前菜单指针移动到上一个同级菜单，并更新显示
+ 195           */
+ 196          void Menu_MovePrev(void)
+ 197          {
+ 198   1          if (current_menu && current_menu->menu_prev)
+ 199   1          {
+ 200   2              current_menu = current_menu->menu_prev; // 切换到上一个菜单
+ 201   2              Menu_Update(); // 立即更新显示
+ 202   2          }
+ 203   1      }
+ 204          
+ 205          /**
+ 206           * @brief 进入子菜单
+ 207           * 
+ 208           * @details 如果当前菜单有子菜单，则进入子菜单并更新显示
+ 209           */
+ 210          void Menu_MoveChild(void)
+ 211          {
+ 212   1          if (current_menu && current_menu->menu_child)
+ 213   1          {
+ 214   2              current_menu = current_menu->menu_child; // 进入子菜单
+ 215   2              Menu_Update(); // 立即更新显示
+ 216   2          }
+ 217   1      }
+ 218          
+ 219          /**
+ 220           * @brief 返回父菜单
+ 221           * 
+ 222           * @details 如果当前菜单有父菜单，则返回父菜单并更新显示
+ 223           */
+ 224          void Menu_MoveParent(void)
+ 225          {
+ 226   1          if (current_menu && current_menu->menu_parent)
+ 227   1          {
+ 228   2              current_menu = current_menu->menu_parent; // 返回父菜单
+ 229   2              Menu_Update(); // 立即更新显示
+ 230   2          }
+ 231   1      }
+ 232          
+ 233          /**
+ 234           * @brief 更新当前菜单显示
+ 235           * 
+ 236           * @details 调用当前菜单的更新函数，刷新显示缓冲区内容
+ 237           *          此函数应定期被任务调度器调用，以保持显示内容的实时性
+ 238           */
+ 239          void Menu_Update(void)
+ 240          {
+C51 COMPILER V9.60.7.0   UI                                                                03/30/2025 14:53:13 PAGE 5   
+
+ 241   1          if (current_menu && current_menu->menu_func)
+ 242   1          {
+ 243   2              current_menu->menu_func(); // 调用当前菜单的更新函数
+ 244   2              // 注意：这里不需要调用Seg_Refresh()，因为Task_Disp()会在中断中定期刷新显�
+             -�
+ 245   2          }
+ 246   1      }
+ 247          
+ 248          /**
+ 249           * @brief 菜单系统初始化
+ 250           * 
+ 251           * @details 初始化所有菜单节点，建立它们之间的链接关系，设置初始菜单
+ 252           *          此函数应在系统启动时调用一次
+ 253           */
+ 254          void Menu_Init(void)
+ 255          {
+ 256   1          // 初始化主菜单
+ 257   1          menu_main.menu_func = main_menu_update; // 设置显示更新函数
+ 258   1          menu_main.menu_parent = NULL; // 主菜单没有父菜单
+ 259   1          menu_main.menu_child = &menu_temp; // 主菜单的子菜单是温度菜单
+ 260   1          menu_main.menu_next = NULL; // 主菜单无后续菜单
+ 261   1          menu_main.menu_prev = NULL; // 主菜单无前置菜单
+ 262   1      
+ 263   1          // 初始化温度菜单
+ 264   1          menu_temp.menu_func = temp_menu_update; // 设置显示更新函数
+ 265   1          menu_temp.menu_parent = &menu_main; // 父菜单为主菜单
+ 266   1          menu_temp.menu_child = NULL; // 无子菜单
+ 267   1          menu_temp.menu_next = &menu_adc; // 下一个同级菜单为ADC菜单
+ 268   1          menu_temp.menu_prev = &menu_ne555; // 无前一个同级菜单
+ 269   1      
+ 270   1          // 初始化ADC菜单
+ 271   1          menu_adc.menu_func = adc_menu_update; // 设置显示更新函数
+ 272   1          menu_adc.menu_parent = &menu_main; // 父菜单为主菜单
+ 273   1          menu_adc.menu_child = NULL; // 无子菜单
+ 274   1          menu_adc.menu_next = &menu_clock; // 下一个同级菜单为时钟菜单
+ 275   1          menu_adc.menu_prev = &menu_temp; // 前一个同级菜单为温度菜单
+ 276   1      
+ 277   1          // 初始化时钟菜单
+ 278   1          menu_clock.menu_func = clock_menu_update; // 设置显示更新函数
+ 279   1          menu_clock.menu_parent = &menu_main; // 父菜单为主菜单
+ 280   1          menu_clock.menu_child = NULL; // 无子菜单
+ 281   1          menu_clock.menu_next = &menu_ultrasonic; // 下一个同级菜单为超声波菜单
+ 282   1          menu_clock.menu_prev = &menu_adc; // 前一个同级菜单为ADC菜单
+ 283   1      
+ 284   1          // 初始化超声波菜单
+ 285   1          menu_ultrasonic.menu_func = ultrasonic_menu_update; // 设置显示更新函数
+ 286   1          menu_ultrasonic.menu_parent = &menu_main; // 父菜单为主菜单
+ 287   1          menu_ultrasonic.menu_child = NULL; // 无子菜单
+ 288   1          menu_ultrasonic.menu_next = &menu_ne555; // 无下一个同级菜单
+ 289   1          menu_ultrasonic.menu_prev = &menu_clock; // 前一个同级菜单为时钟菜单
+ 290   1      
+ 291   1          //ne555
+ 292   1          menu_ne555.menu_func = ne555_menu_update;
+ 293   1          menu_ne555.menu_parent = &menu_main; // 父菜单为主菜单
+ 294   1          menu_ne555.menu_child = NULL;
+ 295   1          menu_ne555.menu_next = &menu_temp;
+ 296   1          menu_ne555.menu_prev = &menu_ultrasonic; // 前一个同级菜单为时钟菜单
+ 297   1      
+ 298   1          // 设置初始菜单为主菜单
+ 299   1          current_menu = &menu_main;
+ 300   1      
+ 301   1          // 立即更新显示，使菜单内容显示出来
+C51 COMPILER V9.60.7.0   UI                                                                03/30/2025 14:53:13 PAGE 6   
+
+ 302   1          Menu_Update();
+ 303   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1279    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     90    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

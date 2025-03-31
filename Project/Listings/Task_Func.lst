@@ -1,0 +1,171 @@
+C51 COMPILER V9.60.7.0   TASK_FUNC                                                         03/30/2025 15:08:07 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TASK_FUNC
+OBJECT MODULE PLACED IN .\Objects\Task_App.obj
+COMPILER INVOKED BY: D:\Keli5\C51\BIN\C51.EXE ..\User\Src\Task_App.c OPTIMIZE(8,SPEED) BROWSE INCDIR(..\User\Inc;..\Dri
+                    -ver\Inc;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\Task_App.lst) OBJECT(.\Objects\Task_App.obj)
+
+line level    source
+
+   1          #include "Task_App.h"
+   2          
+   3          extern uint32_t xdata Mysystick; //系统心跳
+   4          extern uint8_t pdata Seg_Buf[8]; //数码管显示缓存
+   5          extern uint8_t pdata Seg_Point[8]; //数码管小数点显示缓存
+   6          extern uint8_t pdata ucLed[8]; //LED灯显示缓存
+   7          extern uint8_t pdata ucRTC[3]; //时间储存 时、分、秒
+   8          extern float temperature; //温度
+   9          extern uint8_t RxData[5]; //串口接收到的的数据
+  10          extern uint16_t Serial_Idle_Cnt; //串口空闲计时器
+  11          extern uint8_t index; //指示当前接收到数据的索引
+  12          extern uint8_t Adval1; //AD转换值
+  13          extern uint8_t Adval2; //AD转换值
+  14          extern uint8_t Distance; //距离
+  15          extern uint16_t Freq; //NE555频率
+  16          
+  17          /*Task1 Creation Key*/
+  18          void Task_Key(void)
+  19          {
+  20   1          static uint8_t Key_Val;
+  21   1          static uint8_t Key_Down;
+  22   1          static uint8_t Key_Up;
+  23   1          static uint8_t Key_Old = 0; //该值初始给0 避免警告
+  24   1          static bit Test_Flag = 0;
+  25   1      
+  26   1          Key_Val = Key_Read();
+  27   1          Key_Down = Key_Val & (Key_Val ^ Key_Old);
+  28   1          Key_Up = ~Key_Val & (Key_Val ^ Key_Old);
+  29   1          Key_Old = Key_Val;
+  30   1      
+  31   1          /*Test*/
+  32   1      
+  33   1          switch (Key_Down)
+  34   1          {
+  35   2              case 8:
+  36   2                  Test_Flag ^= 1;
+  37   2                  memset(ucLed, Test_Flag, 8);
+  38   2                  memset(Seg_Point, Test_Flag, 8);
+  39   2                  break;
+  40   2              case 4: // 上一菜单
+  41   2                  Menu_MovePrev();
+  42   2                  break;
+  43   2              case 5: //下一菜单
+  44   2                  Menu_MoveNext();
+  45   2                  break;
+  46   2              case 6: //进入子菜单
+  47   2                  Menu_MoveChild();
+  48   2                  break;
+  49   2              case 7: //返回父菜单
+  50   2                  Menu_MoveParent();
+  51   2                  break;
+  52   2          }
+  53   1      }
+  54          
+C51 COMPILER V9.60.7.0   TASK_FUNC                                                         03/30/2025 15:08:07 PAGE 2   
+
+  55          /*Task2 Creation Seg Led*/
+  56          void Task_Disp(void)
+  57          {
+  58   1          uint8_t Scan = Mysystick % 8; //显示扫描变量 只在0——7周期变
+  59   1      
+  60   1          Seg_Disp(Scan, Seg_Buf[Scan], Seg_Point[Scan]); //数码管显示
+  61   1          LED_Disp(Scan, ucLed[Scan]); //LED显示
+  62   1      }
+  63          
+  64          /*Task3 Creation NE555*/
+  65          void Task_NE555(void)
+  66          {
+  67   1          TR0 = 0; //关闭TIM0计数
+  68   1          ET1 = 0; //关闭TIM1中断允许
+  69   1          Freq = TH0 << 8 | TL0; //获取频率
+  70   1          TH0 = TL0 = 0; //手动清空计数值
+  71   1          ET1 = 1; //打开TIM1中断允许
+  72   1          TR0 = 1; //开启TIM0计数
+  73   1      }
+  74          
+  75          /*Task4 Creation Buzz Motor Relay*/
+  76          void Task_Periph(void)
+  77          {
+  78   1          static bit Flag_Buzz = 0;
+  79   1          static bit Flag_Relay = 1;
+  80   1      
+  81   1          Periph_Set(BUZZ, Flag_Buzz);
+  82   1          Periph_Set(RELAY, Flag_Relay);
+  83   1      
+  84   1          //500ms翻转一次继电器和蜂鸣器的电平
+  85   1          Flag_Buzz ^= 1;
+  86   1          Flag_Relay ^= 1;
+  87   1      }
+  88          
+  89          /*Task5 Creation DS1302*/
+  90          void Task_RTC(void)
+  91          {
+  92   1          RTC_Read(ucRTC);
+  93   1      }
+  94          
+  95          /*Task6 Creation DS18B20*/
+  96          void Task_Ds18b20(void)
+  97          {
+  98   1          temperature = Read_temperature(); //获取温度
+  99   1      }
+ 100          
+ 101          /*Task7 Creation Ultrasonic*/
+ 102          void Task_Ul(void)
+ 103          {
+ 104   1          Distance = Distance_Get(); //获取距离
+ 105   1      }
+ 106          
+ 107          /*Task8 Creation Serial*/
+ 108          void Task_Serial(void)
+ 109          {
+ 110   1          static uint8_t psc = 0; //分频器 每1s发送一次
+ 111   1      
+ 112   1          /*模拟串口发送数据 这里是1s打印一个数据*/
+ 113   1          if (++psc == 4)
+ 114   1          {
+ 115   2              psc = 0;
+ 116   2              printf("systime:%d\r\n", (uint16_t)(Mysystick / 1000));
+C51 COMPILER V9.60.7.0   TASK_FUNC                                                         03/30/2025 15:08:07 PAGE 3   
+
+ 117   2          }
+ 118   1      
+ 119   1          if (Serial_Idle_Cnt > 300) //300ms没接受到数据就会解析一次 这里可以自行调整
+ 120   1          {
+ 121   2              /*串口解析操作*/
+ 122   2              if (RxData[0] == '1')
+ 123   2              {
+ 124   3                  static bit i = 0;
+ 125   3                  index = 0;
+ 126   3                  RxData[0] = 0;
+ 127   3                  memset(ucLed, i, 8);
+ 128   3                  i ^= 1;
+ 129   3              }
+ 130   2          }
+ 131   1      }
+ 132          
+ 133          /*Task9 Creation PCF8591*/
+ 134          void Task_PCF8591(void)
+ 135          {
+ 136   1          Adval1 = AD_Read(0x41); //电位器
+ 137   1          Adval2 = AD_Read(0x43); //光敏
+ 138   1      }
+ 139          
+ 140          void Task_Seg(void)
+ 141          {
+ 142   1          Menu_Update();
+ 143   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    331    ----
+   CONSTANT SIZE    =     13    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      5       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      4    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
