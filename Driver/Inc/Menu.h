@@ -11,10 +11,10 @@ typedef struct menu_node_t
 {
     menu_update_func_t menu_func; // 更新显示的函数
     uint8_t menu_id; //界面标识
-    struct menu_node *menu_parent; // 父菜单指针
-    struct menu_node *menu_child; // 子菜单指针
-    struct menu_node *menu_next; // 同级下一个菜单
-    struct menu_node *menu_prev; // 同级上一个菜单
+    struct menu_node_t *menu_parent; // 父菜单指针
+    struct menu_node_t *menu_child; // 子菜单指针
+    struct menu_node_t *menu_next; // 同级下一个菜单
+    struct menu_node_t *menu_prev; // 同级上一个菜单
 } menu_node_t;
 
 // 全局菜单当前指针

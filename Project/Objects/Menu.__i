@@ -1,1 +1,1 @@
-"..\User\Src\Menu.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\User\Inc;..\Driver\Inc;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\Menu.lst) OBJECT(.\Objects\Menu.obj)
+"..\Driver\Src\Menu.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(..\User\Inc;..\Driver\Inc;.\SYS) DEBUG OBJECTEXTEND PRINT(.\Listings\Menu.lst) OBJECT(.\Objects\Menu.obj)

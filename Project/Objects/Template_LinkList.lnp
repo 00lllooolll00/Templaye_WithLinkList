@@ -10,11 +10,11 @@
 ".\Objects\Ultrasonic.obj",
 ".\Objects\Serial.obj",
 ".\Objects\MyFilter.obj",
+".\Objects\Menu.obj",
+".\Objects\Task.obj",
 ".\Objects\STARTUP.obj",
 ".\Objects\main.obj",
-".\Objects\Task.obj",
 ".\Objects\Task_App.obj",
-".\Objects\Menu.obj",
 ".\Objects\Menu_App.obj" 
 TO ".\Objects\Template_LinkList" 
 PRINT(".\Listings\Template_LinkList.m51") RAMSIZE(256) 

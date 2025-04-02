@@ -137,7 +137,15 @@ void Task_PCF8591(void)
 
 void Task_Seg(void)
 {
-    memset(Seg_Buf, 10, 8); // 清空显示缓冲区
-    memset(Seg_Point, 0, 8); // 清除所有小数点
+    static menu_node_t *p = NULL; //存储上一次的节点 用于判断是否需要清空显存
+    if (!p) p = current_menu; //第一次没有值 就赋值到current_menu
+
+    if (p != current_menu) //如果更改了界面，则刷新一次显存
+    {
+        memset(Seg_Buf, 10, 8); // 清空显示缓冲区
+        memset(Seg_Point, 0, 8); // 清除所有小数点
+        p = current_menu;
+    }
+
     Menu_Update();
 }

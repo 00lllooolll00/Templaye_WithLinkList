@@ -436,6 +436,16 @@
               <FileType>1</FileType>
               <FilePath>..\Driver\Src\MyFilter.c</FilePath>
             </File>
+            <File>
+              <FileName>Menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\Src\Menu.c</FilePath>
+            </File>
+            <File>
+              <FileName>Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Driver\Src\Task.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -452,19 +462,9 @@
               <FilePath>..\User\Src\main.c</FilePath>
             </File>
             <File>
-              <FileName>Task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\User\Src\Task.c</FilePath>
-            </File>
-            <File>
               <FileName>Task_App.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\Src\Task_App.c</FilePath>
-            </File>
-            <File>
-              <FileName>Menu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\User\Src\Menu.c</FilePath>
             </File>
             <File>
               <FileName>Menu_App.c</FileName>
