@@ -67,7 +67,7 @@ void Task_Disp(void)
     uint8_t Scan = Mysystick % 8; //显示扫描变量 只在0——7周期变
 
     Seg_Disp(Scan, Seg_Buf[Scan], Seg_Point[Scan]); //数码管显示
-    LED_Disp(Scan, Led_Buf[Scan]); //LED显示
+    Led_Disp(Scan, Led_Buf[Scan]); //LED显示
 }
 
 /*Task3 Creation NE555*/

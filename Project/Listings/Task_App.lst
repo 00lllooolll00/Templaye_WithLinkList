@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   TASK_APP                                                          04/06/2025 00:55:40 PAGE 1   
+C51 COMPILER V9.60.7.0   TASK_APP                                                          04/06/2025 01:40:30 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE TASK_APP
@@ -62,7 +62,7 @@ line level    source
   51   2                  Menu_MoveChild();
   52   2                  break;
   53   2      
-C51 COMPILER V9.60.7.0   TASK_APP                                                          04/06/2025 00:55:40 PAGE 2   
+C51 COMPILER V9.60.7.0   TASK_APP                                                          04/06/2025 01:40:30 PAGE 2   
 
   54   2              case 6: //同一级 下一个菜单
   55   2                  Menu_MoveNext();
@@ -80,7 +80,7 @@ line level    source
   67   1          uint8_t Scan = Mysystick % 8; //显示扫描变量 只在0——7周期变
   68   1      
   69   1          Seg_Disp(Scan, Seg_Buf[Scan], Seg_Point[Scan]); //数码管显示
-  70   1          LED_Disp(Scan, Led_Buf[Scan]); //LED显示
+  70   1          Led_Disp(Scan, Led_Buf[Scan]); //LED显示
   71   1      }
   72          
   73          /*Task3 Creation NE555*/
@@ -126,7 +126,7 @@ line level    source
  113   1          Distance = Distance_Get(); //获取距离
  114   1      }
  115          
-C51 COMPILER V9.60.7.0   TASK_APP                                                          04/06/2025 00:55:40 PAGE 3   
+C51 COMPILER V9.60.7.0   TASK_APP                                                          04/06/2025 01:40:30 PAGE 3   
 
  116          /*Task8 Creation Serial*/
  117          void Task_Serial(void)

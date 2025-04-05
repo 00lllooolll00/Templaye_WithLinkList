@@ -129,7 +129,7 @@ LINK MAP OF MODULE:  .\Objects\NewTemplateByNintyNine99 (DELAY)
             CODE    158CH     0051H     UNIT         ?PR?KEY_READ?KEY
             CODE    15DDH     0042H     UNIT         ?PR?_E2PROM_READ?IIC
             CODE    161FH     003CH     UNIT         ?PR?_SEG_DISP?SEG
-            CODE    165BH     003AH     UNIT         ?PR?_LED_DISP?LED
+            CODE    165BH     003AH     UNIT         ?PR?_Led_Disp?LED
             CODE    1695H     003AH     UNIT         ?PR?_RTC_SET?DS1302
             CODE    16CFH     0038H     UNIT         ?PR?DISTANCE_GET?ULTRASONIC
             CODE    1707H     0034H     UNIT         ?PR?READ_TEMPERATURE?ONEWIRE
@@ -349,12 +349,12 @@ SEGMENT                                    BIT_GROUP          DATA_GROUP
 
 ?PR?TASK_DISP?TASK_FUNC                 -----    -----      0052H    0001H
   +--> ?PR?_SEG_DISP?SEG
-  +--> ?PR?_LED_DISP?LED
+  +--> ?PR?_Led_Disp?LED
 
 ?PR?_SEG_DISP?SEG                       0021H.6  0000H.1    -----    -----
   +--> ?CO?SEG
 
-?PR?_LED_DISP?LED                       0021H.6  0000H.1    -----    -----
+?PR?_Led_Disp?LED                       0021H.6  0000H.1    -----    -----
 
 
 
@@ -472,9 +472,9 @@ SYMBOL TABLE OF MODULE:  .\Objects\NewTemplateByNintyNine99 (DELAY)
   D:00D8H         PUBLIC        CCON
   D:0098H         PUBLIC        SCON
   D:0088H         PUBLIC        TCON
-  C:165BH         PUBLIC        _LED_Disp
+  C:165BH         PUBLIC        _Led_Disp
   D:00D0H         PUBLIC        PSW
-  -------         PROC          _LED_DISP
+  -------         PROC          _Led_Disp
   D:0007H         SYMBOL        pos
   B:0021H.6       SYMBOL        enable
   -------         DO            
@@ -501,7 +501,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\NewTemplateByNintyNine99 (DELAY)
   C:1691H         LINE#         29
   C:1694H         LINE#         30
   C:1694H         LINE#         31
-  -------         ENDPROC       _LED_DISP
+  -------         ENDPROC       _Led_Disp
   -------         ENDMOD        LED
 
   -------         MODULE        SEG

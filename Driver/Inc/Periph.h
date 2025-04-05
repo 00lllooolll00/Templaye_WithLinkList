@@ -12,6 +12,6 @@ typedef enum
 
 void Periph_Init(void);
 void Periph_Set(periph_t x, bit enable);
-void LED_Disp(uint8_t pos, bit enable);
+void Led_Disp(uint8_t pos, bit enable);
 
 #endif

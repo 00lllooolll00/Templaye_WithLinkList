@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 00:48:24 PAGE 1   
+C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 01:40:29 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE IIC
@@ -62,7 +62,7 @@ line level    source
   52   1          unsigned char i;
   53   1      
   54   1          for (i = 0; i < 8; i++)
-C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 00:48:24 PAGE 2   
+C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 01:40:29 PAGE 2   
 
   55   1          {
   56   2              scl = 0;
@@ -126,7 +126,7 @@ line level    source
  114   1          scl = 0;
  115   1          sda = 1;
  116   1          I2C_Delay(DELAY_TIME);
-C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 00:48:24 PAGE 3   
+C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 01:40:29 PAGE 3   
 
  117   1      }
  118          
@@ -190,7 +190,7 @@ line level    source
  176   1          I2CSendByte(ADDR_AT24C02 & 0xfe); //选中at24c02芯片 写模式 0-写模式 1-读模式
  177   1          I2CWaitAck(); //等待从机应答
  178   1      
-C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 00:48:24 PAGE 4   
+C51 COMPILER V9.60.7.0   IIC                                                               04/06/2025 01:40:29 PAGE 4   
 
  179   1          I2CSendByte(addr); //向at24c02写入数据  告知写入数据存放在at24c02芯片的地址
  180   1          I2CWaitAck(); //等待从机应答

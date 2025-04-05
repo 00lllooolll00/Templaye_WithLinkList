@@ -21,6 +21,13 @@ typedef int int16_t;
 typedef long int32_t;
 // typedef long long int64_t;//在51里一般用不到
 
+#define OPEN(X)                                                                                                        \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        P2 = P2 & 0x1f | (X << 5);                                                                                     \
+        P2 &= 0x1f;                                                                                                    \
+    } while (0);
+
 extern uint32_t pdata Mysystick;
 
 #endif

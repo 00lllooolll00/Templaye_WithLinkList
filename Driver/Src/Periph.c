@@ -8,14 +8,14 @@ void Periph_Init(void)
 {
     //关闭所有LED
     P0 = 0xff;
-    P2 = P2 & 0x1f | 0x80; //先将P2的高三位清空 再将最高位置一 选择LED通道
-    P2 &= 0x1f; //P0数据取消锁存之后 重新清空P2高三位
+    OPEN(4);
+    // P2 = P2 & 0x1f | 0x80; //先将P2的高三位清空 再将最高位置一 选择LED通道
+    // P2 &= 0x1f; //P0数据取消锁存之后 重新清空P2高三位
     /*Tips：对于之后的P2的位操作不再进行赘述*/
 
     //关闭所有外设 eg.蜂鸣器、继电器
     P0 = 0x00;
-    P2 = P2 & 0x1f | 0xa0;
-    P2 &= 0x1f;
+    OPEN(5);
 }
 
 //共阳极LED，接通低电平点亮
@@ -25,7 +25,7 @@ void Periph_Init(void)
  * @param pos LED的位置
  * @param enable 点亮或者熄灭
  */
-void LED_Disp(uint8_t pos, bit enable)
+void Led_Disp(uint8_t pos, bit enable)
 {
     static uint8_t temp = 0x00; //为了保留之前的LED的状态 这里必须是静态变量
     static uint8_t LED_Old = 0xff;
@@ -42,8 +42,7 @@ void LED_Disp(uint8_t pos, bit enable)
     if (temp != LED_Old) //消除电流声
     {
         P0 = ~temp;
-        P2 = P2 & 0x1f | 0x80;
-        P2 &= 0x1f;
+        OPEN(4);
         LED_Old = temp;
     }
 }
@@ -71,8 +70,7 @@ void Periph_Set(periph_t x, bit enable) //原理和LED差不多 只是这里用�
     if (temp != Peirph_Old)
     {
         P0 = temp;
-        P2 = P2 & 0x1f | 0xa0;
-        P2 &= 0x1f;
+        OPEN(5);
         Peirph_Old = temp;
     }
 }

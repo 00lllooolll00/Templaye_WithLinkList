@@ -17,7 +17,7 @@ line level    source
    7           * @param pos LED的位置
    8           * @param enable 点亮或者熄灭
    9           */
-  10          void LED_Disp(uint8_t pos,bit enable)
+  10          void Led_Disp(uint8_t pos,bit enable)
   11          {
   12   1          static uint8_t temp = 0x00;//为了保留之前的LED的状态 这里必须是静态变量
   13   1          static uint8_t LED_Old = 0xff;

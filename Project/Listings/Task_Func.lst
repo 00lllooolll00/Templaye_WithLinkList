@@ -70,7 +70,7 @@ line level    source
   58   1          uint8_t Scan = Mysystick % 8; //显示扫描变量 只在0——7周期变
   59   1      
   60   1          Seg_Disp(Scan, Seg_Buf[Scan], Seg_Point[Scan]); //数码管显示
-  61   1          LED_Disp(Scan, Led_Buf[Scan]); //LED显示
+  61   1          Led_Disp(Scan, Led_Buf[Scan]); //LED显示
   62   1      }
   63          
   64          /*Task3 Creation NE555*/
