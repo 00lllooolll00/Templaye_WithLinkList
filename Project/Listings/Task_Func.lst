@@ -13,7 +13,7 @@ line level    source
    3          extern uint32_t xdata Mysystick; //系统心跳
    4          extern uint8_t pdata Seg_Buf[8]; //数码管显示缓存
    5          extern uint8_t pdata Seg_Point[8]; //数码管小数点显示缓存
-   6          extern uint8_t pdata ucLed[8]; //LED灯显示缓存
+   6          extern uint8_t pdata Led_Buf[8]; //LED灯显示缓存
    7          extern uint8_t pdata ucRTC[3]; //时间储存 时、分、秒
    8          extern float temperature; //温度
    9          extern uint8_t RxData[5]; //串口接收到的的数据
@@ -44,7 +44,7 @@ line level    source
   34   1          {
   35   2              case 8:
   36   2                  Test_Flag ^= 1;
-  37   2                  memset(ucLed, Test_Flag, 8);
+  37   2                  memset(Led_Buf, Test_Flag, 8);
   38   2                  memset(Seg_Point, Test_Flag, 8);
   39   2                  break;
   40   2              case 4: // 上一菜单
@@ -70,7 +70,7 @@ line level    source
   58   1          uint8_t Scan = Mysystick % 8; //显示扫描变量 只在0——7周期变
   59   1      
   60   1          Seg_Disp(Scan, Seg_Buf[Scan], Seg_Point[Scan]); //数码管显示
-  61   1          LED_Disp(Scan, ucLed[Scan]); //LED显示
+  61   1          LED_Disp(Scan, Led_Buf[Scan]); //LED显示
   62   1      }
   63          
   64          /*Task3 Creation NE555*/
@@ -138,7 +138,7 @@ line level    source
  124   3                  static bit i = 0;
  125   3                  index = 0;
  126   3                  RxData[0] = 0;
- 127   3                  memset(ucLed, i, 8);
+ 127   3                  memset(Led_Buf, i, 8);
  128   3                  i ^= 1;
  129   3              }
  130   2          }

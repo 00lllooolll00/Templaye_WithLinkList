@@ -18,7 +18,7 @@ typedef struct menu_node_t
 } menu_node_t;
 
 // 全局菜单当前指针
-extern menu_node_t *current_menu;
+extern pdata menu_node_t *current_menu;
 
 // 菜单导航函数
 void Menu_Add(menu_node_t *pmenu,

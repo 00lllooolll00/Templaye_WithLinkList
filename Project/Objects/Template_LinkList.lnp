@@ -1,6 +1,4 @@
-".\Objects\Delay.obj",
 ".\Objects\Key.obj",
-".\Objects\LED.obj",
 ".\Objects\Seg.obj",
 ".\Objects\TIM.obj",
 ".\Objects\Periph.obj",

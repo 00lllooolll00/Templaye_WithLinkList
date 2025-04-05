@@ -10,6 +10,9 @@
  */
 #include "Menu.h"
 
+// 当前菜单指针，指向当前激活的菜单项
+pdata menu_node_t *current_menu = NULL;
+
 /**
  * @brief 注册一个界面
  * 

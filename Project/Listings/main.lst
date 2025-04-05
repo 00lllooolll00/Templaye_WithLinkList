@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MAIN                                                              04/02/2025 15:51:49 PAGE 1   
+C51 COMPILER V9.60.7.0   MAIN                                                              04/06/2025 00:55:39 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
@@ -22,87 +22,78 @@ line level    source
   12          #include "Sys.h"
   13          
   14          /*Global Variable*/
-  15          uint32_t xdata Mysystick = 0; //系统心跳
+  15          uint32_t pdata Mysystick = 0; //系统心跳
   16          uint8_t pdata Seg_Buf[8]; //数码管显示缓存
   17          uint8_t pdata Seg_Point[8]; //数码管小数点显示缓存
-  18          uint8_t pdata ucLed[8]; //LED灯显示缓存
-  19          uint8_t pdata ucRTC[3] = {23, 59, 50}; //时间储存 时、分、秒
-  20          float temperature; //温度
-  21          uint8_t RxData[5]; //串口接收到的的数据
-  22          uint16_t Serial_Idle_Cnt; //串口空闲计时器
-  23          uint8_t index; //指示当前接收到数据的索引
-  24          uint8_t Adval1; //AD转换值
-  25          uint8_t Adval2; //AD转换值
-  26          uint8_t Distance; //距离
-  27          uint16_t Freq = 0; //NE555频率
-  28          
-  29          /*MAIN*/
-  30          void main(void)
-  31          {
-  32   1          Periph_Init(); //初始化LED和外设 尽量将该模块放到第一个
-  33   1          /*Initialize*/
-  34   1          Timer0_Init(); //初始化TIM0
-  35   1          // Uart1_Init();//初始化串口1
-  36   1          Timer2_Init(); //初始化心跳时钟源
-  37   1          while (Read_temperature() > 80); //消除ds18b20首次转换为85的数据
-  38   1          memset(Seg_Point, 0, 8); //初始化数码管小数点缓冲
-  39   1          memset(Seg_Buf, 10, 8); //初始化数码管缓冲区
-  40   1          memset(ucLed, 0, 8); //初始化LED缓冲区
-  41   1          RTC_Set(ucRTC); //将需要的时间都写入RTC中
-  42   1          Menu_Init(); //UI初始化
-  43   1      
-  44   1          /*Task Additon*/
-  45   1          /*以下为各个模块的实例历程  取消注释即可观察对应模块的现象*/
-  46   1          Task_Add(&Task_Key, 10);
-  47   1          Task_Add(&Task_NE555, 1000);
-  48   1          // Task_Add(&Task_Periph, 500);
-  49   1          Task_Add(&Task_RTC, 500);
-  50   1          Task_Add(&Task_Ds18b20, 750);
-  51   1          Task_Add(&Task_Ul, 200);
-  52   1          // Task_Add(&Task_Serial, 250);
-  53   1          Task_Add(&Task_PCF8591, 200);
-  54   1          Task_Add(&Task_Seg, 50);
-C51 COMPILER V9.60.7.0   MAIN                                                              04/02/2025 15:51:49 PAGE 2   
+  18          uint8_t pdata Led_Buf[8]; //LED灯显示缓存
+  19          
+  20          /*MAIN*/
+  21          void main(void)
+  22          {
+  23   1          Periph_Init(); //初始化LED和外设 尽量将该模块放到第一个
+  24   1          /*Initialize*/
+  25   1          Timer0_Init(); //初始化TIM0
+  26   1          // Uart1_Init();//初始化串口1
+  27   1          Timer2_Init(); //初始化心跳时钟源
+  28   1          while (Read_temperature() > 80); //消除ds18b20首次转换为85的数据
+  29   1          memset(Seg_Point, 0, 8); //初始化数码管小数点缓冲
+  30   1          memset(Seg_Buf, 10, 8); //初始化数码管缓冲区
+  31   1          memset(Led_Buf, 0, 8); //初始化LED缓冲区
+  32   1          RTC_Set(ucRTC); //将需要的时间都写入RTC中
+  33   1          Menu_Init(); //UI初始化
+  34   1      
+  35   1          /*Task Additon*/
+  36   1          /*以下为各个模块的实例历程  取消注释即可观察对应模块的现象*/
+  37   1          Task_Add(&Task_Key, 10);
+  38   1          Task_Add(&Task_NE555, 1000);
+  39   1          // Task_Add(&Task_Periph, 500);
+  40   1          Task_Add(&Task_RTC, 500);
+  41   1          Task_Add(&Task_Ds18b20, 750);
+  42   1          Task_Add(&Task_Ul, 200);
+  43   1          // Task_Add(&Task_Serial, 250);
+  44   1          Task_Add(&Task_PCF8591, 200);
+  45   1          Task_Add(&Task_Seg, 50);
+  46   1      
+  47   1          EA = 1; //启动定时器
+  48   1          /*Loop*/
+  49   1          while (1)
+  50   1          {
+  51   2              Task_Start();
+  52   2          }
+  53   1      }
+  54          
+C51 COMPILER V9.60.7.0   MAIN                                                              04/06/2025 00:55:39 PAGE 2   
 
-  55   1      
-  56   1          EA = 1; //启动定时器
-  57   1          /*Loop*/
-  58   1          while (1)
-  59   1          {
-  60   2              Task_Start();
-  61   2          }
+  55          /*ISR*/
+  56          /*这里使用TIM2定时器作为系统心跳源*/
+  57          void Timer2_Isr(void) interrupt 12
+  58          {
+  59   1          Mysystick++;
+  60   1          Serial_Idle_Cnt++;
+  61   1          Task_Disp();
   62   1      }
   63          
-  64          /*ISR*/
-  65          /*这里使用TIM2定时器作为系统心跳源*/
-  66          void Timer2_Isr(void) interrupt 12
-  67          {
-  68   1          Mysystick++;
-  69   1          Serial_Idle_Cnt++;
-  70   1          Task_Disp();
-  71   1      }
-  72          
-  73          /*串口中断*/
-  74          void Uart1_Isr(void) interrupt 4
-  75          {
-  76   1          if (RI) //检测串口1接收中断
-  77   1          {
-  78   2              RI = 0; //清除串口1接收中断请求位
-  79   2      
-  80   2              Serial_Idle_Cnt = 0; //没有接收到数据就会一直自增，接收到数据后会保持0，�
+  64          /*串口中断*/
+  65          void Uart1_Isr(void) interrupt 4
+  66          {
+  67   1          if (RI) //检测串口1接收中断
+  68   1          {
+  69   2              RI = 0; //清除串口1接收中断请求位
+  70   2      
+  71   2              Serial_Idle_Cnt = 0; //没有接收到数据就会一直自增，接收到数据后会保持0，�
              -�过这点可以达到空闲解析的效果
-  81   2      
-  82   2              RxData[index++] = SBUF;
-  83   2          }
-  84   1      }
+  72   2      
+  73   2              RxData[index++] = SBUF;
+  74   2          }
+  75   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    318    ----
+   CODE SIZE        =    317    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =      4    ----
-   PDATA SIZE       =     27    ----
-   DATA SIZE        =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =     28    ----
+   DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

@@ -10,6 +10,17 @@
  */
 #include "Task_App.h"
 
+/*Global Variables*/
+uint8_t pdata ucRTC[3] = {23, 59, 50}; //时间储存 时、分、秒
+float temperature; //温度
+uint8_t pdata RxData[5]; //串口接收到的的数据
+uint16_t Serial_Idle_Cnt; //串口空闲计时器
+uint8_t index; //指示当前接收到数据的索引
+uint8_t Adval1; //AD转换值
+uint8_t Adval2; //AD转换值
+uint8_t Distance; //距离
+uint16_t Freq = 0; //NE555频率
+
 /*Task1 Creation Key*/
 void Task_Key(void)
 {
@@ -30,7 +41,7 @@ void Task_Key(void)
     {
         case 8:
             Test_Flag ^= 1;
-            memset(ucLed, Test_Flag, 8);
+            memset(Led_Buf, Test_Flag, 8);
             break;
         case 4: // 上一级菜单
             Menu_MoveParent();
@@ -56,7 +67,7 @@ void Task_Disp(void)
     uint8_t Scan = Mysystick % 8; //显示扫描变量 只在0——7周期变
 
     Seg_Disp(Scan, Seg_Buf[Scan], Seg_Point[Scan]); //数码管显示
-    LED_Disp(Scan, ucLed[Scan]); //LED显示
+    LED_Disp(Scan, Led_Buf[Scan]); //LED显示
 }
 
 /*Task3 Creation NE555*/
@@ -122,7 +133,7 @@ void Task_Serial(void)
             static bit i = 0;
             index = 0;
             RxData[0] = 0;
-            memset(ucLed, i, 8);
+            memset(Led_Buf, i, 8);
             i ^= 1;
         }
     }

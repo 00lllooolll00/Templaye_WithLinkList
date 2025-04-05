@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MENU                                                              04/02/2025 15:51:49 PAGE 1   
+C51 COMPILER V9.60.7.0   MENU                                                              04/06/2025 00:48:25 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MENU
@@ -20,117 +20,120 @@ line level    source
   10           */
   11          #include "Menu.h"
   12          
-  13          /**
-  14           * @brief 注册一个界面
-  15           * 
-  16           * @param pmenu 对应界面的指针
-  17           * @param id 界面ID 0xAB    A：主级数   B：次级数
-  18           * @param pfunc 该界面显示的相关函数
-  19           * @param parent 父级界面
-  20           * @param child 子级界面
-  21           * @param next 同级下一个界面
-  22           * @param prev 同级上一个界面
-  23           */
-  24          void Menu_Add(menu_node_t *pmenu,
-  25                        uint8_t id,
-  26                        menu_update_func_t pfunc,
-  27                        menu_node_t *parent,
-  28                        menu_node_t *child,
-  29                        menu_node_t *next,
-  30                        menu_node_t *prev)
-  31          {
-  32   1          pmenu->menu_id = id;
-  33   1          pmenu->menu_func = pfunc;
-  34   1          pmenu->menu_parent = parent;
-  35   1          pmenu->menu_child = child;
-  36   1          pmenu->menu_next = next;
-  37   1          pmenu->menu_prev = prev;
-  38   1      }
-  39          
-  40          /**
-  41           * @brief 切换到下一个同级菜单
-  42           * 
-  43           * @details 将当前菜单指针移动到下一个同级菜单，并更新显示
-  44           */
-  45          void Menu_MoveNext(void)
-  46          {
-  47   1          if (current_menu && current_menu->menu_next)
-  48   1          {
-  49   2              current_menu = current_menu->menu_next; // 切换到下一个菜单
-  50   2          }
-  51   1      }
-  52          
-  53          /**
-  54           * @brief 切换到上一个同级菜单
-C51 COMPILER V9.60.7.0   MENU                                                              04/02/2025 15:51:49 PAGE 2   
+  13          // 当前菜单指针，指向当前激活的菜单项
+  14          pdata menu_node_t *current_menu = NULL;
+  15          
+  16          /**
+  17           * @brief 注册一个界面
+  18           * 
+  19           * @param pmenu 对应界面的指针
+  20           * @param id 界面ID 0xAB    A：主级数   B：次级数
+  21           * @param pfunc 该界面显示的相关函数
+  22           * @param parent 父级界面
+  23           * @param child 子级界面
+  24           * @param next 同级下一个界面
+  25           * @param prev 同级上一个界面
+  26           */
+  27          void Menu_Add(menu_node_t *pmenu,
+  28                        uint8_t id,
+  29                        menu_update_func_t pfunc,
+  30                        menu_node_t *parent,
+  31                        menu_node_t *child,
+  32                        menu_node_t *next,
+  33                        menu_node_t *prev)
+  34          {
+  35   1          pmenu->menu_id = id;
+  36   1          pmenu->menu_func = pfunc;
+  37   1          pmenu->menu_parent = parent;
+  38   1          pmenu->menu_child = child;
+  39   1          pmenu->menu_next = next;
+  40   1          pmenu->menu_prev = prev;
+  41   1      }
+  42          
+  43          /**
+  44           * @brief 切换到下一个同级菜单
+  45           * 
+  46           * @details 将当前菜单指针移动到下一个同级菜单，并更新显示
+  47           */
+  48          void Menu_MoveNext(void)
+  49          {
+  50   1          if (current_menu && current_menu->menu_next)
+  51   1          {
+  52   2              current_menu = current_menu->menu_next; // 切换到下一个菜单
+  53   2          }
+  54   1      }
+C51 COMPILER V9.60.7.0   MENU                                                              04/06/2025 00:48:25 PAGE 2   
 
-  55           * 
-  56           * @details 将当前菜单指针移动到上一个同级菜单，并更新显示
-  57           */
-  58          void Menu_MovePrev(void)
-  59          {
-  60   1          if (current_menu && current_menu->menu_prev)
-  61   1          {
-  62   2              current_menu = current_menu->menu_prev; // 切换到上一个菜单
-  63   2          }
-  64   1      }
-  65          
-  66          /**
-  67           * @brief 进入子菜单
-  68           * 
-  69           * @details 如果当前菜单有子菜单，则进入子菜单并更新显示
-  70           */
-  71          void Menu_MoveChild(void)
-  72          {
-  73   1          while (current_menu->menu_prev) //只有在最高级的界面才可以进入下一个级别的界面
-  74   1          {
-  75   2              Menu_MovePrev();
-  76   2          }
-  77   1          if (current_menu && current_menu->menu_child)
-  78   1          {
-  79   2              current_menu = current_menu->menu_child; // 进入子菜单
-  80   2          }
-  81   1      }
-  82          
-  83          /**
-  84           * @brief 返回父菜单
-  85           * 
-  86           * @details 如果当前菜单有父菜单，则返回父菜单并更新显示
-  87           */
-  88          void Menu_MoveParent(void)
-  89          {
-  90   1          while (current_menu->menu_prev)
-  91   1          {
-  92   2              Menu_MovePrev();
-  93   2          }
-  94   1          if (current_menu && current_menu->menu_parent)
-  95   1          {
-  96   2              current_menu = current_menu->menu_parent; // 返回父菜单
-  97   2          }
-  98   1      }
-  99          
- 100          /**
- 101           * @brief 更新当前菜单显示
- 102           * 
- 103           * @details 调用当前菜单的更新函数，刷新显示缓冲区内容
- 104           *          此函数应定期被任务调度器调用，以保持显示内容的实时性
- 105           */
- 106          void Menu_Update(void)
- 107          {
- 108   1          if (current_menu && current_menu->menu_func)
- 109   1          {
- 110   2              current_menu->menu_func(); // 调用当前菜单的更新函数
- 111   2          }
- 112   1      }
+  55          
+  56          /**
+  57           * @brief 切换到上一个同级菜单
+  58           * 
+  59           * @details 将当前菜单指针移动到上一个同级菜单，并更新显示
+  60           */
+  61          void Menu_MovePrev(void)
+  62          {
+  63   1          if (current_menu && current_menu->menu_prev)
+  64   1          {
+  65   2              current_menu = current_menu->menu_prev; // 切换到上一个菜单
+  66   2          }
+  67   1      }
+  68          
+  69          /**
+  70           * @brief 进入子菜单
+  71           * 
+  72           * @details 如果当前菜单有子菜单，则进入子菜单并更新显示
+  73           */
+  74          void Menu_MoveChild(void)
+  75          {
+  76   1          while (current_menu->menu_prev) //只有在最高级的界面才可以进入下一个级别的界面
+  77   1          {
+  78   2              Menu_MovePrev();
+  79   2          }
+  80   1          if (current_menu && current_menu->menu_child)
+  81   1          {
+  82   2              current_menu = current_menu->menu_child; // 进入子菜单
+  83   2          }
+  84   1      }
+  85          
+  86          /**
+  87           * @brief 返回父菜单
+  88           * 
+  89           * @details 如果当前菜单有父菜单，则返回父菜单并更新显示
+  90           */
+  91          void Menu_MoveParent(void)
+  92          {
+  93   1          while (current_menu->menu_prev)
+  94   1          {
+  95   2              Menu_MovePrev();
+  96   2          }
+  97   1          if (current_menu && current_menu->menu_parent)
+  98   1          {
+  99   2              current_menu = current_menu->menu_parent; // 返回父菜单
+ 100   2          }
+ 101   1      }
+ 102          
+ 103          /**
+ 104           * @brief 更新当前菜单显示
+ 105           * 
+ 106           * @details 调用当前菜单的更新函数，刷新显示缓冲区内容
+ 107           *          此函数应定期被任务调度器调用，以保持显示内容的实时性
+ 108           */
+ 109          void Menu_Update(void)
+ 110          {
+ 111   1          if (current_menu && current_menu->menu_func)
+ 112   1          {
+ 113   2              current_menu->menu_func(); // 调用当前菜单的更新函数
+ 114   2          }
+ 115   1      }
+
+C51 COMPILER V9.60.7.0   MENU                                                              04/06/2025 00:48:25 PAGE 3   
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    386    ----
-C51 COMPILER V9.60.7.0   MENU                                                              04/02/2025 15:51:49 PAGE 3   
-
+   CODE SIZE        =    485    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
-   PDATA SIZE       =   ----    ----
+   PDATA SIZE       =      3    ----
    DATA SIZE        =   ----      19
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----

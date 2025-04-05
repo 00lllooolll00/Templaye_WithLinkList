@@ -11,8 +11,6 @@
 #include "Menu_App.h"
 #include "MyFilter.h"
 
-// 当前菜单指针，指向当前激活的菜单项
-menu_node_t *current_menu = NULL;
 
 // 预定义所有菜单节点，使用静态分配以节省内存
 xdata menu_node_t menu_temp; // 温度菜单节点

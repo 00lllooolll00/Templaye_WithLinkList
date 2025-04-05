@@ -1468,7 +1468,7 @@ SYMBOL TABLE OF MODULE:  .\Objects\NewTemplateByNintyNine99 (DELAY)
   D:0017H         PUBLIC        Serial_Idle_Cnt
   X:00CFH         PUBLIC        Mysystick
   C:188AH         PUBLIC        Uart1_Isr
-  X:0013H         PUBLIC        ucLed
+  X:0013H         PUBLIC        Led_Buf
   D:00D0H         PUBLIC        PSW
   -------         PROC          MAIN
   C:1007H         LINE#         30

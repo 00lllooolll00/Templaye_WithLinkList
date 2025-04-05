@@ -12,19 +12,10 @@
 #include "Sys.h"
 
 /*Global Variable*/
-uint32_t xdata Mysystick = 0; //系统心跳
+uint32_t pdata Mysystick = 0; //系统心跳
 uint8_t pdata Seg_Buf[8]; //数码管显示缓存
 uint8_t pdata Seg_Point[8]; //数码管小数点显示缓存
-uint8_t pdata ucLed[8]; //LED灯显示缓存
-uint8_t pdata ucRTC[3] = {23, 59, 50}; //时间储存 时、分、秒
-float temperature; //温度
-uint8_t RxData[5]; //串口接收到的的数据
-uint16_t Serial_Idle_Cnt; //串口空闲计时器
-uint8_t index; //指示当前接收到数据的索引
-uint8_t Adval1; //AD转换值
-uint8_t Adval2; //AD转换值
-uint8_t Distance; //距离
-uint16_t Freq = 0; //NE555频率
+uint8_t pdata Led_Buf[8]; //LED灯显示缓存
 
 /*MAIN*/
 void main(void)
@@ -37,7 +28,7 @@ void main(void)
     while (Read_temperature() > 80); //消除ds18b20首次转换为85的数据
     memset(Seg_Point, 0, 8); //初始化数码管小数点缓冲
     memset(Seg_Buf, 10, 8); //初始化数码管缓冲区
-    memset(ucLed, 0, 8); //初始化LED缓冲区
+    memset(Led_Buf, 0, 8); //初始化LED缓冲区
     RTC_Set(ucRTC); //将需要的时间都写入RTC中
     Menu_Init(); //UI初始化
 
