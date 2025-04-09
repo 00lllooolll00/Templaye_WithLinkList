@@ -39,5 +39,6 @@ extern uint8_t Adval1; //AD转换值
 extern uint8_t Adval2; //AD转换值
 extern uint8_t Distance; //距离
 extern uint16_t Freq; //NE555频率
+extern bit Serial_RxFlag; //串口接受了数据的标志位
 
 #endif

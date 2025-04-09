@@ -20,6 +20,7 @@ uint8_t Adval1; //AD转换值
 uint8_t Adval2; //AD转换值
 uint8_t Distance; //距离
 uint16_t Freq = 0; //NE555频率
+bit Serial_RxFlag = 0; //串口接受了数据的标志位
 
 /*Task1 Creation Key*/
 void Task_Key(void)
@@ -125,13 +126,14 @@ void Task_Serial(void)
         printf("systime:%d\r\n", (uint16_t)(Mysystick / 1000));
     }
 
-    if (Serial_Idle_Cnt > 300) //300ms没接受到数据就会解析一次 这里可以自行调整
+    if (Serial_Idle_Cnt > 300 && Serial_RxFlag) //串口接受了数据,并且300ms没再次接受到数据就会解析一次 这里可以自行调整
     {
         /*串口解析操作*/
         if (RxData[0] == '1')
         {
             static bit i = 0;
             index = 0;
+            Serial_RxFlag = 0;
             RxData[0] = 0;
             memset(Led_Buf, i, 8);
             i ^= 1;
